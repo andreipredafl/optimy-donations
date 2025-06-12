@@ -36,3 +36,54 @@ export interface User {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    links: PaginationLink[];
+    from: number;
+    to: number;
+    total: number;
+    per_page: number;
+}
+
+export interface Campaign {
+    id: number;
+    title: string;
+    slug: string;
+    description: string;
+    goal_amount_cents: number;
+    current_amount_cents: number;
+    donations_count: number;
+    donors_count: number;
+    status: 'active' | 'completed' | 'cancelled' | string;
+    start_date: string;
+    end_date?: string;
+    featured_image_url?: string;
+    creator: User;
+    category: Category;
+    donations: Donation[];
+    created_at: string;
+}
+
+export interface Category {
+    id: number;
+    name: string;
+}
+
+export interface DateValue {
+    year: number;
+    month: number;
+    day: number;
+}
+
+interface Donation {
+    id: number;
+    amount_cents: number;
+    donor_name?: string;
+    message?: string;
+    created_at: string;
+    anonymous: boolean;
+}
