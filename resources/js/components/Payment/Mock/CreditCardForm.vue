@@ -4,10 +4,6 @@ import { Label } from '@/components/ui/label';
 import { CreditCard } from 'lucide-vue-next';
 import { computed, reactive, watch } from 'vue';
 
-interface Props {
-    errors?: Record<string, string>;
-}
-
 interface Emits {
     (
         e: 'update:card-details',
@@ -20,10 +16,6 @@ interface Emits {
     ): void;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-    errors: () => ({}),
-});
-
 const emit = defineEmits<Emits>();
 
 const cardForm = reactive({
@@ -31,6 +23,13 @@ const cardForm = reactive({
     card_expiry: '',
     card_cvc: '',
     card_holder_name: '',
+});
+
+const errors = reactive({
+    card_holder_name: '',
+    card_number: '',
+    card_expiry: '',
+    card_cvc: '',
 });
 
 watch(
@@ -43,7 +42,7 @@ watch(
 
 const formatCardNumber = (event: Event) => {
     const input = event.target as HTMLInputElement;
-    let value = input.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+    const value = input.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
     const formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
     cardForm.card_number = formattedValue.substring(0, 19);
 

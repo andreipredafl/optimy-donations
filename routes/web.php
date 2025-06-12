@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\DonationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,7 +17,9 @@ Route::get('dashboard', function () {
 Route::group(['middleware' => ['auth']], function () {
 
     Route::resource('campaigns', CampaignController::class);
-    Route::get('campaigns/{campaign}/donate', [CampaignController::class, 'donate'])
+    
+    // Donation routes
+    Route::post('campaigns/{campaign}/donate', [DonationController::class, 'store'])
         ->name('campaigns.donate');
 });
 

@@ -25,10 +25,19 @@ class CampaignController extends Controller
 
     public function show(Campaign $campaign): Response
     {
-        $campaign->load(['category', 'creator', 'donations']);
+        $campaign->load([
+            'category',
+            'creator',
+            'donations' => function ($query) {
+                $query->where('status', 'completed')
+                    ->orderBy('created_at', 'desc');
+            },
+            'donations.user',
+        ]);
 
         return Inertia::render('Campaigns/Show', [
             'campaign' => $campaign,
+            'payment_driver' => config('payment.default_driver'),
         ]);
     }
 

@@ -71,7 +71,7 @@ const formatDate = (date: string | null): string => {
                     <Card v-for="campaign in campaigns.data" :key="campaign.id" class="overflow-hidden">
                         <div class="relative aspect-video w-full overflow-hidden">
                             <img
-                                :src="getImageUrl(campaign.featured_image_url)"
+                                :src="getImageUrl(campaign.featured_image_url ?? null)"
                                 :alt="campaign.title"
                                 class="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                             />

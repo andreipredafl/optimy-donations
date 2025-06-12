@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import DonationModal from '@/components/DonationModal.vue';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import DonationCard from '@/components/Donation/Card.vue';
+import Creator from '@/components/Donation/Creator.vue';
+import Modal from '@/components/Donation/Modal.vue';
+import Recent from '@/components/Donation/Recent.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatDate, formatRelativeDate } from '@/lib/utils';
 import type { Campaign } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { Calendar, Clock, DollarSign, Heart, Share2, Target, User } from 'lucide-vue-next';
+import { Calendar, Target, User } from 'lucide-vue-next';
 import { computed, defineProps, ref } from 'vue';
 
 const props = defineProps<{
     campaign: Campaign;
+    payment_driver: string;
 }>();
 
 const isDialogOpen = ref(false);
@@ -33,51 +35,6 @@ const getStatusClasses = (status: string) => {
     }
 };
 
-const getStatusText = (status: string) => {
-    switch (status) {
-        case 'active':
-            return 'Active';
-        case 'completed':
-            return 'Completed';
-        case 'cancelled':
-            return 'Cancelled';
-        default:
-            return status.charAt(0).toUpperCase() + status.slice(1);
-    }
-};
-
-const formatAmount = (cents: number): string => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'EUR',
-    }).format(cents / 100);
-};
-
-const formatDate = (date: string): string => {
-    return new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
-};
-
-const formatRelativeDate = (date: string): string => {
-    const now = new Date();
-    const targetDate = new Date(date);
-    const diffTime = targetDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) {
-        return 'Campaign ended';
-    } else if (diffDays === 0) {
-        return 'Ends today';
-    } else if (diffDays === 1) {
-        return '1 day left';
-    } else {
-        return `${diffDays} days left`;
-    }
-};
-
 const daysLeft = computed(() => {
     if (!props.campaign.end_date) return null;
     return formatRelativeDate(props.campaign.end_date);
@@ -90,21 +47,7 @@ const navigateToDonate = () => {
 };
 
 const onDonationSuccess = () => {
-    // Optionally refresh the page or update campaign data
     window.location.reload();
-};
-
-const shareCampaign = () => {
-    if (navigator.share) {
-        navigator.share({
-            title: props.campaign.title,
-            text: props.campaign.description,
-            url: window.location.href,
-        });
-    } else {
-        navigator.clipboard.writeText(window.location.href);
-        alert('Campaign URL copied to clipboard!');
-    }
 };
 
 const calculateProgress = computed(() => {
@@ -119,21 +62,21 @@ const calculateProgress = computed(() => {
         <div class="mx-auto flex h-full max-w-6xl flex-1 flex-col gap-6 p-4">
             <!-- Campaign Header -->
             <div class="relative">
-                <img :src="getImageUrl(campaign.featured_image_url)" :alt="campaign.title" class="h-64 w-full rounded-lg object-cover md:h-96" />
+                <img
+                    :src="getImageUrl(campaign.featured_image_url ?? null)"
+                    :alt="campaign.title"
+                    class="h-64 w-full rounded-lg object-cover md:h-96"
+                />
                 <div class="absolute top-4 right-4 flex gap-2">
                     <span
                         :class="`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${getStatusClasses(campaign.status)}`"
                     >
-                        {{ getStatusText(campaign.status) }}
+                        {{ campaign.status }}
                     </span>
-                    <Button variant="outline" size="sm" @click="shareCampaign">
-                        <Share2 class="h-4 w-4" />
-                    </Button>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <!-- Main Content -->
                 <div class="space-y-6 lg:col-span-2">
                     <!-- Campaign Info -->
                     <Card>
@@ -166,129 +109,30 @@ const calculateProgress = computed(() => {
                     </Card>
 
                     <!-- Recent Donations -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Recent Donations</CardTitle>
-                            <CardDescription>Latest supporters of this campaign</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div v-if="campaign.donations && campaign.donations.length > 0" class="space-y-4">
-                                <div
-                                    v-for="donation in campaign.donations.slice(0, 10)"
-                                    :key="donation.id"
-                                    class="flex items-start justify-between border-b border-gray-100 pb-4 last:border-b-0 last:pb-0"
-                                >
-                                    <div class="flex items-start gap-3">
-                                        <Avatar class="h-10 w-10">
-                                            <AvatarImage
-                                                :src="`https://ui-avatars.com/api/?name=${donation.anonymous ? 'Anonymous' : 'Donor'}&background=random`"
-                                            />
-                                            <AvatarFallback>
-                                                {{ donation.anonymous ? 'A' : 'D' }}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p class="font-medium">
-                                                {{ donation.anonymous ? 'Anonymous Donor' : 'Anonymous Donor' }}
-                                            </p>
-                                            <p class="mt-1 text-xs text-muted-foreground">
-                                                {{ formatDate(donation.created_at) }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-semibold text-green-600">
-                                            {{ formatAmount(donation.amount_cents) }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-else class="py-8 text-center text-muted-foreground">
-                                <Heart class="mx-auto mb-4 h-12 w-12 opacity-50" />
-                                <p>No donations yet. Be the first to support this campaign!</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <Recent :donations="campaign.donations" />
                 </div>
 
-                <!-- Sidebar -->
                 <div class="space-y-6">
                     <!-- Donation Card -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle class="flex items-center gap-2">
-                                <DollarSign class="h-5 w-5" />
-                                Support This Campaign
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent class="space-y-4">
-                            <!-- Progress -->
-                            <div class="space-y-3">
-                                <div class="flex items-baseline justify-between">
-                                    <span class="text-2xl font-bold">{{ formatAmount(campaign.current_amount_cents) }}</span>
-                                    <span class="text-sm text-muted-foreground"> of {{ formatAmount(campaign.goal_amount_cents) }} </span>
-                                </div>
-                                <Progress :value="calculateProgress" class="h-3" />
-                                <div class="text-sm text-muted-foreground">{{ calculateProgress.toFixed(1) }}% funded</div>
-                            </div>
-
-                            <!-- Stats -->
-                            <div class="grid grid-cols-2 gap-4 border-t border-b py-4">
-                                <div class="text-center">
-                                    <div class="text-2xl font-bold">{{ campaign.donations_count || 0 }}</div>
-                                    <div class="text-sm text-muted-foreground">donations</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="text-2xl font-bold">{{ campaign.donors_count || 0 }}</div>
-                                    <div class="text-sm text-muted-foreground">donors</div>
-                                </div>
-                            </div>
-
-                            <!-- Time left -->
-                            <div v-if="daysLeft && isActive" class="flex items-center gap-2 text-sm">
-                                <Clock class="h-4 w-4" />
-                                <span>{{ daysLeft }}</span>
-                            </div>
-
-                            <!-- Donation Button -->
-                            <Button v-if="isActive" @click="navigateToDonate" class="w-full" size="lg">
-                                <Heart class="mr-2 h-4 w-4" />
-                                Donate Now
-                            </Button>
-                            <div v-else class="py-4 text-center text-muted-foreground">
-                                <p>This campaign is no longer accepting donations.</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <DonationCard
+                        :campaign="campaign"
+                        :calculate-progress="calculateProgress"
+                        :is-active="isActive"
+                        :days-left="daysLeft"
+                        :navigate-to-donate="navigateToDonate"
+                    />
 
                     <!-- Creator Info -->
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Campaign Creator</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div class="flex items-start gap-3">
-                                <Avatar class="h-12 w-12">
-                                    <AvatarImage :src="campaign.creator.avatar" />
-                                    <AvatarFallback>
-                                        {{ campaign.creator.name.charAt(0) }}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p class="font-medium">{{ campaign.creator.name }}</p>
-                                    <p class="text-sm text-muted-foreground">Campaign Organizer</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <Creator :creator="campaign.creator" />
                 </div>
             </div>
         </div>
 
         <!-- Donation Modal Component -->
-        <DonationModal
+        <Modal
             :is-open="isDialogOpen"
             :campaign="{ id: campaign.id, title: campaign.title }"
+            :payment-driver="props.payment_driver"
             @update:is-open="isDialogOpen = $event"
             @success="onDonationSuccess"
         />

@@ -53,6 +53,7 @@ export interface Campaign {
     id: number;
     title: string;
     slug: string;
+    featured_image_url?: string;
     description: string;
     goal_amount_cents: number;
     current_amount_cents: number;
@@ -85,5 +86,7 @@ interface Donation {
     donor_name?: string;
     message?: string;
     created_at: string;
-    anonymous: boolean;
+    is_anonymous: boolean;
+    user?: User;
+    campaign: Campaign;
 }

@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import CreditCardForm from '@/components/Payment/Mock/CreditCardForm.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { router } from '@inertiajs/vue3';
-import { Heart } from 'lucide-vue-next';
-import { computed, reactive, ref } from 'vue';
-import CreditCardForm from './CreditCardForm.vue';
+import { CheckCircle, Heart } from 'lucide-vue-next';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 interface Props {
     isOpen: boolean;
@@ -15,6 +15,7 @@ interface Props {
         id: number;
         title: string;
     };
+    paymentDriver: string;
 }
 
 interface Emits {
@@ -27,12 +28,13 @@ const emit = defineEmits<Emits>();
 
 const donationForm = reactive({
     amount: '',
-    anonymous: false,
+    is_anonymous: false,
     card_number: '',
     card_expiry: '',
     card_cvc: '',
     card_holder_name: '',
     processing: false,
+    success: false,
     errors: {} as Record<string, string>,
 });
 
@@ -41,11 +43,13 @@ const quickAmounts = [10, 25, 50, 100, 250, 500];
 
 const resetForm = () => {
     donationForm.amount = '';
-    donationForm.anonymous = false;
+    donationForm.is_anonymous = false;
     donationForm.card_number = '';
     donationForm.card_expiry = '';
     donationForm.card_cvc = '';
     donationForm.card_holder_name = '';
+    donationForm.processing = false;
+    donationForm.success = false;
     donationForm.errors = {};
     selectedAmount.value = null;
 };
@@ -70,7 +74,7 @@ const submitDonation = () => {
         `/campaigns/${props.campaign.id}/donate`,
         {
             amount: donationForm.amount,
-            anonymous: donationForm.anonymous,
+            is_anonymous: donationForm.is_anonymous,
             card_number: donationForm.card_number,
             card_expiry: donationForm.card_expiry,
             card_cvc: donationForm.card_cvc,
@@ -78,13 +82,17 @@ const submitDonation = () => {
         },
         {
             onSuccess: () => {
-                resetForm();
-                emit('update:isOpen', false);
-                emit('success');
+                donationForm.success = true;
+                donationForm.processing = false;
+
+                setTimeout(() => {
+                    resetForm();
+                    emit('update:isOpen', false);
+                    emit('success');
+                }, 3000);
             },
             onError: (errors) => {
                 donationForm.errors = errors;
-                console.log('Donation errors:', errors);
             },
             onFinish: () => {
                 donationForm.processing = false;
@@ -101,17 +109,42 @@ const closeModal = () => {
 const isFormValid = computed(() => {
     return donationForm.amount && donationForm.card_number && donationForm.card_expiry && donationForm.card_cvc && donationForm.card_holder_name;
 });
+
+const paymentDriver = computed(() => props.paymentDriver || 'mock');
+
+const StripeCreditCardForm = ref<Component | null>(null);
+
+onMounted(async () => {
+    if (paymentDriver.value === 'stripe') {
+        const module = await import('@/components/Payment/Stripe/CreditCardForm.vue');
+        StripeCreditCardForm.value = module.default;
+    }
+});
 </script>
 
 <template>
     <Dialog :open="isOpen" @update:open="emit('update:isOpen', $event)">
         <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
-                <DialogTitle>Make a Donation</DialogTitle>
-                <DialogDescription> Support "{{ campaign.title }}" with your donation </DialogDescription>
+                <DialogTitle>{{ donationForm.success ? 'Donation Successful!' : 'Make a Donation' }}</DialogTitle>
+                <DialogDescription>
+                    {{ donationForm.success ? 'Thank you for your generous donation!' : `Support "${campaign.title}" with your donation` }}
+                </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="submitDonation" class="space-y-6">
+            <!-- Success Message Display -->
+            <div v-if="donationForm.success" class="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
+                <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                    <CheckCircle class="h-6 w-6 text-green-600" />
+                </div>
+                <h3 class="mb-2 text-lg font-medium text-green-900">Payment Successful!</h3>
+                <p class="mb-4 text-sm text-green-700">
+                    Your donation of €{{ donationForm.amount }} has been processed successfully. Thank you for supporting "{{ campaign.title }}"!
+                </p>
+                <p class="text-xs text-green-600">This window will close automatically in a few seconds...</p>
+            </div>
+
+            <form v-if="!donationForm.success" @submit.prevent="submitDonation" class="space-y-6">
                 <!-- Quick Amount Selection -->
                 <div class="space-y-3">
                     <Label class="text-base font-semibold">Select Amount (EUR)</Label>
@@ -146,15 +179,39 @@ const isFormValid = computed(() => {
                     </p>
                 </div>
 
-                <!-- Credit Card Form Component -->
                 <div class="border-t pt-4">
-                    <CreditCardForm :errors="donationForm.errors" @update:card-details="updateCardDetails" />
+                    <CreditCardForm v-if="paymentDriver === 'mock'" :errors="donationForm.errors" @update:card-details="updateCardDetails" />
+                    <component
+                        v-else-if="paymentDriver === 'stripe' && StripeCreditCardForm"
+                        :is="StripeCreditCardForm"
+                        :errors="donationForm.errors"
+                        @update:card-details="updateCardDetails"
+                    />
                 </div>
 
-                <!-- Anonymous Checkbox -->
                 <div class="flex items-center space-x-2 border-t pt-4">
-                    <Checkbox id="anonymous" v-model:checked="donationForm.anonymous" />
-                    <Label for="anonymous" class="text-sm"> Make this donation anonymous </Label>
+                    <Checkbox id="is_anonymous" v-model:checked="donationForm.is_anonymous" />
+                    <Label for="is_anonymous" class="text-sm"> Make this donation anonymous </Label>
+                </div>
+
+                <!-- Payment Error Display -->
+                <div v-if="donationForm.errors.payment" class="rounded-lg border border-red-200 bg-red-50 p-4">
+                    <div class="flex items-center">
+                        <div class="text-sm font-medium text-red-600">Payment Failed</div>
+                    </div>
+                    <p class="mt-1 text-sm text-red-600">
+                        {{ donationForm.errors.payment }}
+                    </p>
+                </div>
+
+                <!-- General Error Display -->
+                <div v-if="donationForm.errors.general" class="rounded-lg border border-red-200 bg-red-50 p-4">
+                    <div class="flex items-center">
+                        <div class="text-sm font-medium text-red-600">Error</div>
+                    </div>
+                    <p class="mt-1 text-sm text-red-600">
+                        {{ donationForm.errors.general }}
+                    </p>
                 </div>
 
                 <!-- Submit Button -->

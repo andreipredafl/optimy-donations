@@ -48,6 +48,7 @@ class Campaign extends Model
         'status',
         'start_date',
         'end_date',
+        'completed_at',
         'featured_image_url',
         'donations_count',
         'donors_count',

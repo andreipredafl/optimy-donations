@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('status', 50)->default('active');
             $table->timestamp('start_date');
             $table->timestamp('end_date');
+            $table->timestamp('completed_at')->nullable();
             $table->string('featured_image_url', 500)->nullable();
             $table->integer('donations_count')->default(0);
             $table->integer('donors_count')->default(0);
