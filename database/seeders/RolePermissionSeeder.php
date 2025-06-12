@@ -20,7 +20,6 @@ class RolePermissionSeeder extends Seeder
 
         $permissions = [
             'campaigns.create', 'campaigns.edit', 'campaigns.delete', 'campaigns.view',
-            'campaign_updates.create', 'campaign_updates.edit', 'campaign_updates.delete', 'campaign_updates.view',
             'categories.create', 'categories.edit', 'categories.delete', 'categories.view',
             'donations.create', 'donations.view', 'donations.view_all', 'donations.manage', 'donations.refund',
             'users.view', 'users.create', 'users.edit', 'users.delete',
@@ -45,7 +44,6 @@ class RolePermissionSeeder extends Seeder
 
         $employeePermissions = [
             'campaigns.create', 'campaigns.edit', 'campaigns.delete', 'campaigns.view',
-            'campaign_updates.create', 'campaign_updates.edit', 'campaign_updates.delete', 'campaign_updates.view',
             'categories.view',
             'donations.create', 'donations.view',
             'users.view',

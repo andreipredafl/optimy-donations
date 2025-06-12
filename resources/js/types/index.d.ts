@@ -63,6 +63,7 @@ export interface Campaign {
     start_date: string;
     end_date?: string;
     featured_image_url?: string;
+    creator_id: number;
     creator: User;
     category: Category;
     donations: Donation[];

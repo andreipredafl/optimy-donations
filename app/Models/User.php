@@ -90,14 +90,6 @@ class User extends Authenticatable
     }
 
     /**
-     * @return HasMany<CampaignUpdate, $this>
-     */
-    public function campaignUpdates(): HasMany
-    {
-        return $this->hasMany(CampaignUpdate::class, 'author_id');
-    }
-
-    /**
      * Generate a unique employee_ref like 'EMP001', 'EMP002', etc.
      */
     public static function generateEmployeeRef(): string

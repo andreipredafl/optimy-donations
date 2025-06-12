@@ -110,14 +110,6 @@ class Campaign extends Model
         return $this->hasMany(Donation::class);
     }
 
-    /**
-     * @return HasMany<CampaignUpdate, $this>
-     */
-    public function campaignUpdates(): HasMany
-    {
-        return $this->hasMany(CampaignUpdate::class);
-    }
-
     public function getGoalAmountAttribute(): float
     {
         return $this->goal_amount_cents / 100;

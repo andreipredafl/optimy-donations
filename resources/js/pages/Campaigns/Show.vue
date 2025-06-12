@@ -14,6 +14,11 @@ import { computed, defineProps, ref } from 'vue';
 const props = defineProps<{
     campaign: Campaign;
     payment_driver: string;
+    auth: {
+        user: {
+            id: number;
+        } | null;
+    };
 }>();
 
 const isDialogOpen = ref(false);
@@ -68,6 +73,12 @@ const calculateProgress = computed(() => {
                     class="h-64 w-full rounded-lg object-cover md:h-96"
                 />
                 <div class="absolute top-4 right-4 flex gap-2">
+                    <span
+                        v-if="auth.user && campaign.creator_id === auth.user.id"
+                        class="inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800"
+                    >
+                        your campaign
+                    </span>
                     <span
                         :class="`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${getStatusClasses(campaign.status)}`"
                     >

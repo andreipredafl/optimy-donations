@@ -3,15 +3,46 @@ import AppEmptyState from '@/components/AppEmptyState.vue';
 import AppPagination from '@/components/AppPagination.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress/';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { Campaign, PaginatedResponse } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { Calendar, Heart, Target, Users } from 'lucide-vue-next';
+import type { Campaign, Category, PaginatedResponse } from '@/types';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Calendar, Heart, Search, Target, Users } from 'lucide-vue-next';
+import { ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     campaigns: PaginatedResponse<Campaign>;
+    categories: Category[];
+    filters: {
+        search?: string;
+        category?: string;
+    };
+    auth: {
+        user: {
+            id: number;
+        } | null;
+    };
 }>();
+
+const search = ref(props.filters.search || '');
+const selectedCategory = ref(props.filters.category || '');
+
+const applyFilters = () => {
+    router.get(
+        '/campaigns',
+        {
+            search: search.value,
+            category: selectedCategory.value,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
 
 const getImageUrl = (featuredImage: string | null): string => {
     return featuredImage || 'https://placehold.co/600x400?text=Campaign+Image';
@@ -66,6 +97,32 @@ const formatDate = (date: string | null): string => {
                 </Link>
             </div>
 
+            <!-- Filters -->
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex w-100 items-center gap-2">
+                    <div class="relative flex-1">
+                        <Search class="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input v-model="search" type="search" placeholder="Search campaigns..." class="pl-8" @keyup.enter="applyFilters" />
+                    </div>
+                    <Button @click="applyFilters" class="gap-2">
+                        <Search class="h-4 w-4" />
+                        Filter
+                    </Button>
+                </div>
+
+                <Select v-model="selectedCategory" @update:model-value="applyFilters">
+                    <SelectTrigger class="w-[180px]">
+                        <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem :value="null">All Categories</SelectItem>
+                        <SelectItem v-for="category in categories" :key="category.id" :value="category.id.toString()">
+                            {{ category.name }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
             <template v-if="campaigns.data && campaigns.data.length">
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                     <Card v-for="campaign in campaigns.data" :key="campaign.id" class="overflow-hidden">
@@ -75,7 +132,13 @@ const formatDate = (date: string | null): string => {
                                 :alt="campaign.title"
                                 class="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                             />
-                            <div class="absolute top-2 right-2">
+                            <div class="absolute top-2 right-2 flex gap-2">
+                                <span
+                                    v-if="auth.user && campaign.creator_id === auth.user.id"
+                                    class="inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800"
+                                >
+                                    your campaign
+                                </span>
                                 <span
                                     :class="`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors ${getStatusClasses(campaign.status)}`"
                                 >

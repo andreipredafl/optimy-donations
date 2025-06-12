@@ -5,21 +5,42 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Campaign\StoreCampaignRequest;
 use App\Models\Campaign;
 use App\Models\Category;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Storage;
 
 class CampaignController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $campaigns = Campaign::where('status', Campaign::STATUS_ACTIVE)
-            ->with(['category', 'creator'])
-            ->orderBy('start_date', 'desc')
-            ->paginate(6);
+        $query = Campaign::where('status', Campaign::STATUS_ACTIVE)
+            ->with(['category', 'creator']);
+
+        if ($request->has('search') && $request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', "%{$request->search}%")
+                    ->orWhere('description', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->has('category') && $request->category) {
+            $query->where('category_id', $request->category);
+        }
+
+        $campaigns = $query->orderBy('start_date', 'desc')
+            ->paginate(6)
+            ->withQueryString();
+
+        $categories = Category::orderBy('name')->get();
 
         return Inertia::render('Campaigns/Index', [
             'campaigns' => $campaigns,
+            'categories' => $categories,
+            'filters' => $request->only(['search', 'category']),
+            'auth' => [
+                'user' => auth()->user(),
+            ],
         ]);
     }
 
@@ -38,6 +59,9 @@ class CampaignController extends Controller
         return Inertia::render('Campaigns/Show', [
             'campaign' => $campaign,
             'payment_driver' => config('payment.default_driver'),
+            'auth' => [
+                'user' => auth()->user(),
+            ],
         ]);
     }
 
