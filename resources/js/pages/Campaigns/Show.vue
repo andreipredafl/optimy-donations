@@ -1,17 +1,20 @@
 <script setup lang="ts">
+import DonationModal from '@/components/DonationModal.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { Campaign } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { Calendar, Clock, DollarSign, Heart, Share2, Target, User } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, defineProps, ref } from 'vue';
 
 const props = defineProps<{
     campaign: Campaign;
 }>();
+
+const isDialogOpen = ref(false);
 
 const getImageUrl = (featuredImage: string | null): string => {
     return featuredImage || 'https://placehold.co/800x400?text=Campaign+Image';
@@ -27,6 +30,19 @@ const getStatusClasses = (status: string) => {
             return 'bg-red-100 text-red-800 border-red-200';
         default:
             return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+};
+
+const getStatusText = (status: string) => {
+    switch (status) {
+        case 'active':
+            return 'Active';
+        case 'completed':
+            return 'Completed';
+        case 'cancelled':
+            return 'Cancelled';
+        default:
+            return status.charAt(0).toUpperCase() + status.slice(1);
     }
 };
 
@@ -69,13 +85,13 @@ const daysLeft = computed(() => {
 
 const isActive = computed(() => props.campaign.status === 'active');
 
-const calculateProgress = computed(() => {
-    if (!props.campaign.goal_amount_cents || props.campaign.goal_amount_cents === 0) return 0;
-    return (props.campaign.current_amount_cents / props.campaign.goal_amount_cents) * 100;
-});
-
 const navigateToDonate = () => {
-    router.visit(`/campaigns/${props.campaign.id}/donate`);
+    isDialogOpen.value = true;
+};
+
+const onDonationSuccess = () => {
+    // Optionally refresh the page or update campaign data
+    window.location.reload();
 };
 
 const shareCampaign = () => {
@@ -90,6 +106,11 @@ const shareCampaign = () => {
         alert('Campaign URL copied to clipboard!');
     }
 };
+
+const calculateProgress = computed(() => {
+    if (!props.campaign.goal_amount_cents || props.campaign.goal_amount_cents === 0) return 0;
+    return (props.campaign.current_amount_cents / props.campaign.goal_amount_cents) * 100;
+});
 </script>
 
 <template>
@@ -103,7 +124,7 @@ const shareCampaign = () => {
                     <span
                         :class="`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${getStatusClasses(campaign.status)}`"
                     >
-                        {{ campaign.status }}
+                        {{ getStatusText(campaign.status) }}
                     </span>
                     <Button variant="outline" size="sm" @click="shareCampaign">
                         <Share2 class="h-4 w-4" />
@@ -160,17 +181,16 @@ const shareCampaign = () => {
                                     <div class="flex items-start gap-3">
                                         <Avatar class="h-10 w-10">
                                             <AvatarImage
-                                                :src="`https://ui-avatars.com/api/?name=${donation.donor_name || 'Anonymous'}&background=random`"
+                                                :src="`https://ui-avatars.com/api/?name=${donation.anonymous ? 'Anonymous' : 'Donor'}&background=random`"
                                             />
                                             <AvatarFallback>
-                                                {{ donation.anonymous ? 'A' : (donation.donor_name || 'Anonymous').charAt(0) }}
+                                                {{ donation.anonymous ? 'A' : 'D' }}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div>
                                             <p class="font-medium">
-                                                {{ donation.anonymous ? 'Anonymous' : donation.donor_name || 'Anonymous' }}
+                                                {{ donation.anonymous ? 'Anonymous Donor' : 'Anonymous Donor' }}
                                             </p>
-                                            <p v-if="donation.message" class="mt-1 text-sm text-muted-foreground">"{{ donation.message }}"</p>
                                             <p class="mt-1 text-xs text-muted-foreground">
                                                 {{ formatDate(donation.created_at) }}
                                             </p>
@@ -264,5 +284,13 @@ const shareCampaign = () => {
                 </div>
             </div>
         </div>
+
+        <!-- Donation Modal Component -->
+        <DonationModal
+            :is-open="isDialogOpen"
+            :campaign="{ id: campaign.id, title: campaign.title }"
+            @update:is-open="isDialogOpen = $event"
+            @success="onDonationSuccess"
+        />
     </AppLayout>
 </template>
