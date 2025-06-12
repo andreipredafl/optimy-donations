@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Campaign;
 use App\Models\Donation;
 use App\Models\User;
+use App\Jobs\SendDonationConfirmation;
 use App\Services\Payment\PaymentManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -60,6 +61,8 @@ class DonationService
             $this->completeDonation($donation, $campaign, $paymentResult);
 
             DB::commit();
+
+            SendDonationConfirmation::dispatch($user, $donation);
 
             return [
                 'success' => true,
