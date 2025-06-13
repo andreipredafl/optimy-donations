@@ -34,6 +34,8 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'job_title' => 'required|string|max:255',
+            'department' => 'required|string|max:100',
         ]);
 
         // @phpstan-ignore staticMethod.notFound
@@ -41,7 +43,12 @@ class RegisteredUserController extends Controller
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
+            'job_title' => $request->input('job_title'),
+            'department' => $request->input('department'),
+            'employee_ref' => User::generateEmployeeRef(),
         ]);
+
+        $user->assignRole('employee');
 
         event(new Registered($user));
 

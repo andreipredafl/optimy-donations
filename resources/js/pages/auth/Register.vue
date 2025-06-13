@@ -13,6 +13,8 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
+    job_title: '',
+    department: '',
 });
 
 const submit = () => {
@@ -38,6 +40,18 @@ const submit = () => {
                     <Label for="email">Email address</Label>
                     <Input id="email" type="email" required :tabindex="2" autocomplete="email" v-model="form.email" placeholder="email@example.com" />
                     <InputError :message="form.errors.email" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="job_title">Job Title</Label>
+                    <Input id="job_title" type="text" required :tabindex="5" v-model="form.job_title" placeholder="Job title" />
+                    <InputError :message="form.errors.job_title" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="department">Department</Label>
+                    <Input id="department" type="text" required :tabindex="6" v-model="form.department" placeholder="Department" />
+                    <InputError :message="form.errors.department" />
                 </div>
 
                 <div class="grid gap-2">
@@ -68,7 +82,7 @@ const submit = () => {
                     <InputError :message="form.errors.password_confirmation" />
                 </div>
 
-                <Button type="submit" class="mt-2 w-full" tabindex="5" :disabled="form.processing">
+                <Button type="submit" class="mt-2 w-full" tabindex="7" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                     Create account
                 </Button>
@@ -76,7 +90,7 @@ const submit = () => {
 
             <div class="text-center text-sm text-muted-foreground">
                 Already have an account?
-                <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="6">Log in</TextLink>
+                <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="8">Log in</TextLink>
             </div>
         </form>
     </AuthBase>

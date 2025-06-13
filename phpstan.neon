@@ -1,4 +1,7 @@
+includes:
+    - vendor/phpstan/laravel/extension.neon
+
 parameters:
-  level: 8
-  paths:
-    - app
+    level: 8
+    paths:
+        - app
