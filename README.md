@@ -139,3 +139,15 @@ After these tests, the system will be fully functional and ready for production 
     ```sh
     php artisan permission:cache-reset
     ```
+
+## Test Accounts
+
+You can use the following test accounts to log in and explore the system:
+
+- **Admin:**  
+  Email: `admin@acme.com`  
+  Password: `password`
+
+- **Employee/User:**  
+  Email: `jane.doe@acme.com`  
+  Password: `password`
