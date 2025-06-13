@@ -29,6 +29,7 @@ class StoreDonationRequest extends FormRequest
             'is_anonymous' => [
                 'boolean',
             ],
+            // I know, is not the best way to validate card details, but for the sake of this example (mock payment processing)
             'card_number' => [
                 'required',
                 'string',
