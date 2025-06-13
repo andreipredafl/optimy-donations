@@ -40,10 +40,10 @@ class DonationConfirmation extends Notification implements ShouldQueue
             ->subject('Thank You for Your Donation!')
             ->greeting('Hello!')
             ->line('Thank you for your generous donation.')
-            ->line('Your donation of $' . number_format($this->donation->amount, 2) . ' has been successfully processed.')
+            ->line('Your donation of $'.number_format($this->donation->amount, 2).' has been successfully processed.')
             ->line('We truly appreciate your support!')
-            ->line('Transaction ID: ' . $this->donation->transaction_id)
-            ->line('Date: ' . $this->donation->created_at->format('F j, Y'))
+            ->line('Transaction ID: '.$this->donation->transaction_id)
+            ->line('Date: '.$this->donation->created_at->format('F j, Y'))
             ->line('Thank you for making a difference!');
     }
 
