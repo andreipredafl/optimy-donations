@@ -1,5 +1,43 @@
 # Challenge Solution Overview
 
+## Quick Start with Docker
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) installed on your machine
+- [Docker Compose](https://docs.docker.com/compose/install/) (included with Docker Desktop)
+
+### Running the Application
+
+```bash
+# Clone the repository
+git clone git@github.com:andreipredafl/optimy-donations.git
+cd optimy-donations
+
+# Start the application
+docker-compose up --build
+```
+
+The application will be available at: **http://localhost:8000**
+
+### Database Seeding
+
+Run seeders manually to populate test data:
+
+```bash
+docker-compose exec app php artisan db:seed
+```
+
+### What's Included in Docker Setup
+
+- PHP 8.4 with Laravel 12
+- Node.js 20 for frontend assets
+- SQLite database (persisted in `./database/database.sqlite`)
+- Nginx web server
+- All dependencies pre-installed
+
+---
+
 ## 1. Introduction & Tech Stack
 
 This project is a solution for the challenge, built with:
