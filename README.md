@@ -139,3 +139,34 @@ After these tests, the system will be fully functional and ready for production 
     ```sh
     php artisan permission:cache-reset
     ```
+
+## Test Accounts
+
+You can use the following test accounts to log in and explore the system:
+
+- **Admin:**  
+  Email: `admin@acme.com`  
+  Password: `password`
+
+- **Employee/User:**  
+  Email: `jane.doe@acme.com`  
+  Password: `password`
+
+## Test Suite
+
+The application includes comprehensive tests covering core functionality:
+
+- **Test Structure:** Organized by entity in `tests/Feature/` with folders for Campaign, Category, Payment, Auth, and Settings
+- **Coverage:** 52 tests with 161 assertions covering CRUD operations, payment processing, validation, authorization, and error handling
+- **Mock Payment Testing:** Includes scenarios for successful payments, declined cards, and insufficient funds using the test card numbers mentioned above
+- **Run Tests:**
+    ```sh
+    php artisan test
+    ```
+- **Run Specific Module:**
+    ```sh
+    php artisan test tests/Feature/Campaign/
+    php artisan test tests/Feature/Payment/
+    ```
+
+Key test areas include campaign management, donation processing with mock payments, category relationships, and user authentication flows.
