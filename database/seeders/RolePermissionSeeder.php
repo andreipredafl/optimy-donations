@@ -46,7 +46,6 @@ class RolePermissionSeeder extends Seeder
             'campaigns.create', 'campaigns.edit', 'campaigns.delete', 'campaigns.view',
             'categories.view',
             'donations.create', 'donations.view',
-            'users.view',
         ];
 
         $adminPermissions = array_merge($employeePermissions, [

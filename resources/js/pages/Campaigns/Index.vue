@@ -8,9 +8,9 @@ import { Progress } from '@/components/ui/progress/';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { Campaign, Category, PaginatedResponse } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { Calendar, Heart, Search, Target, Users } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Calendar, Heart, Pencil, Search, Target, Users } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
     campaigns: PaginatedResponse<Campaign>;
@@ -25,6 +25,9 @@ const props = defineProps<{
         } | null;
     };
 }>();
+
+const page = usePage();
+const can = computed(() => page.props.can ?? {});
 
 const search = ref(props.filters.search || '');
 const selectedCategory = ref(props.filters.category || '');
@@ -92,7 +95,7 @@ const formatDate = (date: string | null): string => {
                     <h1 class="text-3xl font-bold tracking-tight">Campaigns</h1>
                     <p class="text-muted-foreground">Discover and support meaningful campaigns in your community.</p>
                 </div>
-                <Link href="/campaigns/create">
+                <Link href="/campaigns/create" v-if="can['campaigns.create']">
                     <Button class="ml-4"> Create new campaign</Button>
                 </Link>
             </div>
@@ -187,11 +190,18 @@ const formatDate = (date: string | null): string => {
                             </div>
                         </CardContent>
 
-                        <CardFooter>
+                        <CardFooter class="flex flex-col gap-2">
                             <Link :href="`/campaigns/${campaign.id}`" class="w-full">
                                 <Button class="w-full gap-2">
                                     <Heart class="h-4 w-4" />
                                     Support Campaign
+                                </Button>
+                            </Link>
+
+                            <Link class="w-full" v-if="auth.user && (campaign.creator_id === auth.user.id || can['campaigns.update'])" :href="'/'">
+                                <Button class="w-full gap-2" :disabled="!can['campaigns.update']" variant="outline">
+                                    <Pencil class="h-4 w-4" />
+                                    Edit Campaign - TODO
                                 </Button>
                             </Link>
                         </CardFooter>

@@ -3,6 +3,7 @@ import type { Config } from 'ziggy-js';
 
 export interface Auth {
     user: User;
+    can: Record<string, boolean>;
 }
 
 export interface BreadcrumbItem {
@@ -15,6 +16,7 @@ export interface NavItem {
     href: string;
     icon?: LucideIcon;
     isActive?: boolean;
+    show?: boolean;
 }
 
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
@@ -23,6 +25,7 @@ export type AppPageProps<T extends Record<string, unknown> = Record<string, unkn
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+    can: Record<string, boolean>;
 };
 
 export interface User {
@@ -33,6 +36,9 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    employee_ref: string | null;
+    department: string | null;
+    job_title: string | null;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
@@ -81,13 +87,16 @@ export interface DateValue {
     day: number;
 }
 
-interface Donation {
+export interface Donation {
     id: number;
     amount_cents: number;
-    donor_name?: string;
+    status: string;
+    payment_method: string;
+    transaction_id: string;
     message?: string;
     created_at: string;
+    completed_at?: string;
     is_anonymous: boolean;
     user?: User;
-    campaign: Campaign;
+    campaign?: Campaign;
 }

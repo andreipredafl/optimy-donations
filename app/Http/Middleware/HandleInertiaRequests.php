@@ -40,18 +40,31 @@ class HandleInertiaRequests extends Middleware
         // @phpstan-ignore method.notFound
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        return [
+        $data = [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
+                '123' => 123,
             ],
             'ziggy' => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'can' => $request->user()
+                ? $request->user()->getPermissionsViaRoles()
+                    ->pluck('name')
+                    ->mapWithKeys(function ($permissionName) use ($request) {
+                        return [$permissionName => $request->user()->can($permissionName)];
+                    })
+                    ->toArray()
+                : [],
         ];
+
+        // dd($data['can']);
+
+        return $data;
     }
 }

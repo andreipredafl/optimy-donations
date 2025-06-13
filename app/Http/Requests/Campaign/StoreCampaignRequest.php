@@ -35,14 +35,12 @@ class StoreCampaignRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // Convert goal_amount to float if it's a string
         if ($this->has('goal_amount') && is_string($this->goal_amount)) {
             $this->merge([
                 'goal_amount' => (float) $this->goal_amount,
             ]);
         }
 
-        // Ensure category_id is an integer
         if ($this->has('category_id') && is_string($this->category_id)) {
             $this->merge([
                 'category_id' => (int) $this->category_id,
