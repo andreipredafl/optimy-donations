@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Campaign;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;

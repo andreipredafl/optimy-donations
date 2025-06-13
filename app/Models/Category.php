@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -21,6 +22,8 @@ use Illuminate\Support\Str;
  */
 class Category extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'slug',
@@ -49,7 +52,7 @@ class Category extends Model
         });
 
         static::updating(function ($category) {
-            if ($category->isDirty('name') && empty($category->slug)) {
+            if ($category->isDirty('name')) {
                 $category->slug = Str::slug($category->name);
             }
         });

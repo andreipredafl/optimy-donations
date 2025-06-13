@@ -23,7 +23,6 @@ class CategoryFactory extends Factory
             'name' => ucwords($name),
             'slug' => Str::slug($name),
             'description' => fake()->optional()->sentence(),
-            'color' => fake()->hexColor(),
             'is_active' => fake()->boolean(90),
         ];
     }
