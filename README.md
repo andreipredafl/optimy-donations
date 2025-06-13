@@ -28,6 +28,14 @@ Run seeders manually to populate test data:
 docker-compose exec app php artisan db:seed
 ```
 
+### Queue Worker (for Email Notifications)
+
+To process email notifications after donations, start the queue worker:
+
+```bash
+docker-compose exec app php artisan queue:work
+```
+
 ### What's Included in Docker Setup
 
 - PHP 8.4 with Laravel 12
