@@ -21,4 +21,9 @@ fi
 
 php artisan migrate --force
 
+# Create storage symlink if it doesn't exist
+if [ ! -L "/var/www/public/storage" ]; then
+    php artisan storage:link
+fi
+
 exec "$@" 

@@ -19,12 +19,10 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::resource('campaigns', CampaignController::class);
 
-    // Donation routes
     Route::get('donations', [DonationController::class, 'index'])->name('donations.index');
     Route::post('campaigns/{campaign}/donate', [DonationController::class, 'store'])
         ->name('campaigns.donate');
 
-    // Users routes
     Route::get('users', [UserController::class, 'index'])->name('users.index');
 });
 
